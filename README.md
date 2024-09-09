@@ -2,11 +2,9 @@
 # How to store External API Data in Postgres with AWS
 
 Data engineering step-by-step process on how to use AWS tools to get data from an API, send them to an S3 Bucket using a Lambda function, do ETL processes with a Glue Job and send to a PostgreSQL database with an Upsert approach. This repository is under development.
-This project was possible with the help of many coders and their tutorials on YouTube, Linkedin, and Stack Overflow: [Anything2Cloud](https://youtu.be/xqxFWB5BD0o?si=FewMLDPzv-6jkfOe), [Yogesh Vats](https://www.linkedin.com/pulse/using-external-python-library-aws-glue-etl-job-postgresql-yogesh-vats/), among others.
 
 First and foremost, I recommend using Ohio's region (us-east-2) for all of the AWS services in your project, since it's one of the cheapest regions. I made the mistake of using another region that's closer to where I live because I thought it would be more expensive to run services in another country, but that wasn't the case. Switching regions cut costs drastically for me, and it didn't seem to affect the performance of the services.<br/>
-Also, I used to run an AWS Redshift database, but switched to RDS Postgres, since it's cheaper and it serves well for my needs. Redshift implementation on AWS Glue is easier to do than RDS Postgres when you need to do an Upsert approach (overwriting lines with same ID value as a new one and inserting other lines, a method that avoids duplicate lines). AWS Glue Visual Job doesn't have an out-of-the-box function for Postgres like Redshift does, so when it's time to connect the Glue Job to RDS you need to convert to Script-only Job editor and use external Python libraries to do the Upsert. It's a harder process but it's worth the cost reduction.
-
+Also, I used to run an AWS Redshift database, but switched to RDS Postgres, since it's cheaper and it serves well for my needs. Redshift implementation on AWS Glue is easier to do than RDS Postgres when you need to do an Upsert approach (overwriting lines with same ID value as a new one and inserting other lines, a method that avoids duplicate lines). AWS Glue Visual Job doesn't have an out-of-the-box function for Postgres like Redshift does, so in order to connect the Glue Job to RDS after you set all the nodes in the visual editor, you need to convert it to a script-only Job and use external Python libraries to do the Upsert. It's a harder process but it's worth the cost reduction.
 ## S3 Bucket
 ### Create bucket
 Here are my configurations:
@@ -28,15 +26,20 @@ Here are my configurations:
     - AWSGlueServiceRole
     - AWSLakeFormationCrossAccountManager
     - AWSLakeFormationDataAdmin
-- Add permissions - Create inline policy:
-- ...
+    - CloudWatchLogsReadOnlyAccess
+- No inline policies are needed
 
 ### Create role
 ETLlambdaAccessRole:
 - Trusted entity type - AWS account - this account
 - MFA and external ID not required
 - Attach these policies:
-![policies](https://github.com/user-attachments/assets/e9132f27-a876-4352-95c3-a9fe28051037)
+  - AdministratorAccess
+  - AmazonS3FullAccess
+  - AWSGlueServiceRole
+  - AWSLambdaExecute
+  - CloudWatchFullAccess
+
 In the trust relationships tab, edit the trust policy and paste this code:
 
 		{
@@ -76,7 +79,6 @@ In the trust relationships tab, edit the trust policy and paste this code:
 
 
 	
-CloudWatchLogsReadOnlyAccess
 ## Gathering data from API and uploading to S3 Bucket
 This process consists of writing code, testing it on an IDE like VSCode, sending that code into AWS Lambda with some minor adjustments, and automating it EventBridge.
 I used VSCode to write my code. Basic requirements for this are:
@@ -227,3 +229,7 @@ At the very end of the code, commit the connection, close the cursor and close t
 	job.commit()
 
 ### Files description:
+
+...
+
+This repository was possible with the help of many coders and their tutorials on YouTube, Linkedin, and Stack Overflow: [Anything2Cloud](https://youtu.be/xqxFWB5BD0o?si=FewMLDPzv-6jkfOe), [Yogesh Vats](https://www.linkedin.com/pulse/using-external-python-library-aws-glue-etl-job-postgresql-yogesh-vats/), among others.
