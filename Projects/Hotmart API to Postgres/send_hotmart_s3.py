@@ -1,4 +1,4 @@
-#Importar Bibliotecas:
+#Import libraries:
 #AWS SDKs:
 import logging
 import boto3
@@ -8,24 +8,24 @@ from botocore.exceptions import ClientError
 import requests
 import json
 
-#Definir data:
+#Set date:
 import time
 from datetime import datetime, timedelta
 
-#Salvar arquivos CSV:
+#Save CSV files:
 import csv
 from pathlib import Path
 import io
 
-#Carregar variáveis de ambiente:
+#Load environment variables:
 import os
 from dotenv import load_dotenv
 
-#Mesclar tabelas:
+#Merge tables:
 import pandas as pd
 
 
-#Definir função para tratar dados obtidos do HTTP Response:
+#Define function that processes data from HTTP Response:
 def dfs(dados, path_atual=None):
     '''Realiza uma busca de profundidade (DFS) e gera uma lista com caminhos para todos os nós folha de uma árvore de dados, e os valores desses nós. \n
     Parameters:
@@ -60,33 +60,31 @@ def dfs(dados, path_atual=None):
 
     return resultado
 
-#Definir função para tratar colunas que contém uma palavra específica:
+#Define function that checks if a column has a specific word:
 def contem_palavra(input_string, palavra):
     palavras = input_string.split('_')
     return palavra in palavras
 
 
-#Credenciais Cliente Hotmart:
+#Load credentials:
 load_dotenv()
-
 client_id_dev = os.getenv('client_id_dev')
 client_secret_dev = os.getenv('client_secret_dev')
 basic_dev = os.getenv('basic_dev')
 
-
-#Conectar Notebook ao S3 Bucket:
+#Connect to S3 Bucket:
 AWS_PROFILE_NAME = os.getenv('AWS_PROFILE_NAME')
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('MY_SECRET_ACCESS_KEY')
 BUCKET_NAME = os.getenv('BUCKET_NAME')
 
-session = boto3.Session() #Obs: omitir profile_name= AWS_PROFILE_NAME ao passar para AWS Lambda
+session = boto3.Session() #Obs: ommit "profile_name = AWS_PROFILE_NAME" when using this code in AWS Lambda
 s3 = session.client('s3')
 
 
-#Rodar código no AWS Lambda:
+#Run code on AWS Lambda:
 def lambda_handler(event, context):
-    #Obter Access Token do Hotmart:
+    #Get access token:
     url = 'https://api-sec-vlc.hotmart.com/security/oauth/token'
     headers = {
         'Content-Type': 'application/json',
@@ -101,15 +99,15 @@ def lambda_handler(event, context):
     access_token_dev = response.json()['access_token']
 
 
-    #Definir data para Histórico de Vendas:
+    #Set date for Sales History:
     data_epoch_str = os.getenv('data_epoch_str')
     data_inicial = datetime.utcnow().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-    #obs: usando utcnow pois o API da Hotmart usa UTC para datas
+    #Obs: I'm using utcnow because Hotmart's API uses UTC for its dates
     data_inicial_str = data_inicial.isoformat()
 
     data_final = data_inicial.replace(year=data_inicial.year + 1)
     data_final_str = data_final.isoformat()
-    #obs: strings de data devem estar no formato 'yyyy-MM-ddTHH:mm:ss' (Exemplo: '2024-01-01T00:00:00')
+    #Obs: date strings should be in the format 'yyyy-MM-ddTHH:mm:ss' (Ex: '2024-01-01T00:00:00')
 
     data_epoch = datetime.strptime(data_epoch_str, '%Y-%m-%dT%H:%M:%S')
     data_inicial = datetime.strptime(data_inicial_str, '%Y-%m-%dT%H:%M:%S')
@@ -119,7 +117,7 @@ def lambda_handler(event, context):
     delta_final = int((data_final - data_epoch).total_seconds() * 1000)
 
 
-    #Realizar consultas diferentes para pegar todas as informações possíveis da API
+    #Make different requests to get all possible information from the API:
     consultas = ['history', 'summary', 'users', 'commissions', 'price_details']
     status_transacoes = ['APPROVED', 'BLOCKED', 'CANCELLED', 'CHARGEBACK', 'COMPLETE', 'EXPIRED',
                          'NO_FUNDS', 'OVERDUE', 'PARTIALLY_REFUNDED', 'PRE_ORDER', 'PRINTED_BILLET',
@@ -134,13 +132,13 @@ def lambda_handler(event, context):
     'commissions_8_source': 'str', 'commissions_9_commission_value': 'float', 'commissions_9_commission_currency_code': 'str', 'commissions_9_user_ucode': 'str', 'commissions_9_user_email': 'str', 'commissions_9_user_name': 'str', 'commissions_9_source': 'str', 'commissions_10_commission_value': 'float', 'commissions_10_commission_currency_code': 'str', 'commissions_10_user_ucode': 'str', 'commissions_10_user_email': 'str', 'commissions_10_user_name': 'str', 'commissions_10_source': 'str', 'purchase_status': 'str'},
         "price_details": {'coupon_code': 'str', 'coupon_value': 'float', 'fee_value': 'int', 'fee_currency_code': 'str', 'real_conversion_rate': 'float', 'vat_value': 'float', 'vat_currency_code': 'str', 'product_id': 'int', 'product_name': 'str', 'total_value': 'float', 'total_currency_code': 'str', 'base_value': 'int', 'base_currency_code': 'str', 'transaction': 'str', 'purchase_status': 'str'}}
 
-    #Obter Histórico de Vendas:
+    #Get Sales History:
     for consulta in consultas:
         dicionario_padrao = dicionarios_padrao_consultas[consulta]
 
         itens_tratados = []
         for status in status_transacoes:
-            #Obter dados de todas as páginas de requests:
+            #Handle paging in the API requests:
             primeiro_request = True
             achou_ultima_pagina = False
             while(not achou_ultima_pagina):
@@ -151,38 +149,38 @@ def lambda_handler(event, context):
                     'Authorization': f'Bearer {access_token_dev}'
 
                     #rate limit headers:
-                    #'RateLimit-Limit': (filtro, não vou usar)
-                    #'RateLimit-Remaining': (filtro, não vou usar)
-                    #'RateLimit-Reset': (filtro, não vou usar)
-                    #'X-RateLimit-Limit-Minute': (filtro, não vou usar)
-                    #'X-RateLimit-Remaining-Minute': (filtro, não vou usar)
+                    #'RateLimit-Limit': (filter, not used)
+                    #'RateLimit-Remaining': (filter, not used)
+                    #'RateLimit-Reset': (filter, not used)
+                    #'X-RateLimit-Limit-Minute': (filter, not used)
+                    #'X-RateLimit-Remaining-Minute': (filter, not used)
                 }
                 params = {
-                    #pagination params: (filtro, não vou usar)
+                    #pagination params: (filter, not used)
                     'max_results': 500,
-                    #'page_token': (não é escrito no primeiro request)
+                    #'page_token': (not needed on the first page)
                     
                     #custom response params:
-                    #'select': (filtro, não vou usar)
+                    #'select': (filter, not used)
                     
                     #sales params:
-                    #product_id: (filtro, não vou usar)
+                    #product_id: (filter, not used)
                     'start_date': delta_inicial,
                     'end_date': delta_final,
-                    #sales_source: (filtro, não vou usar)
-                    #transaction: (filtro, não vou usar)
-                    #buyer_name: (filtro, não vou usar)
+                    #sales_source: (filter, not used)
+                    #transaction: (filter, not used)
+                    #buyer_name: (filter, not used)
                     'transaction_status': status
-                    #payment_type: (filtro, não vou usar)
-                    #offer_code: (filtro, não vou usar)
-                    #commission_as: (filtro, não vou usar)
-                    #affiliate_name: (filtro, não vou usar) 
+                    #payment_type: (filter, not used)
+                    #offer_code: (filter, not used)
+                    #commission_as: (filter, not used)
+                    #affiliate_name: (filter, not used)
                 }
                 if not primeiro_request:
                     params['page_token'] = next_page_token
 
                 response = requests.get(url, headers=headers, params=params, data=payload)
-                time.sleep(0.5) #repouso de 0.5 segundos para evitar erro de too many requests ao acessar a API do Hotmart. Esse erro só costuma acontecer no Lambda.
+                time.sleep(0.5) #0.5 seconds sleep time to avoid too many requests error when using Hotmart's API. This error usually only occurs when using this code on Lambda.
                 
                 try:
                     if 'next_page_token' in response.json()["page_info"]:
@@ -194,7 +192,7 @@ def lambda_handler(event, context):
 
                 primeiro_request = False
                 
-                #Tratar HTTP Response e converter para arquivo CSV:
+                #Process HTTP Response and convert to CSV:
                 itens = response.json()['items']
 
                 for venda in itens:
@@ -232,7 +230,7 @@ def lambda_handler(event, context):
         elif consulta != "summary":
             df_relevant_data = pd.merge(how = "inner", left = df_relevant_data, right = pd.read_csv(csv_data, dtype=str), left_on = 'purchase_transaction', right_on = 'transaction', suffixes=('', f'_{consulta.upper()}_DUPLICATE'))
 
-        #enviar para S3:
+        #Send to S3:
         s3.put_object(Body=csv_string.encode('utf-8'), Bucket=BUCKET_NAME, Key=f'database_hotmart_{consulta}.csv')
 
     csv_string_relevant_data = df_relevant_data.to_csv(index=False)
