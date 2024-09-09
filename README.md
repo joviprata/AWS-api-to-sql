@@ -112,7 +112,7 @@ After the code is done, create a Lambda function. These are my configurations:
 It should work fine. Now,
 - Delete __pycache__
 - Rename lambda_function.py to send_<CUSTOM_NAME>_s3.py. Scroll down to Runtime settings, edit, and rename handler to send_<CUSTOM_NAME>_s3.lambda_handler
-- There's no need for a requirements.txt file here.
+- There's no need for a requirements.txt file.
 - Scroll down to Layers - Add a layer.
 - If you used Pandas in your code, add AWS layer AWSSDKPandas-Python310. The version that I picked was the most recent and only available one, version 15. For other libraries used in your code, refer to this [tutorial](https://youtu.be/ddSoj_ihLfo?si=huewQzZas46Av-7p). Do the same process as the tutorial, just changing "requests" to the library you want to install. (Obs: if you want to make sql queries in your function, use pg8000 instead of psycopg2).
 - Paste your code on the editor. The main part of your code must be inside the function lambda_handler(event, context).
