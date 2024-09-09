@@ -1,4 +1,4 @@
-#Importar Bibliotecas:
+#Import libraries:
 #AWS SDKs:
 import logging
 import boto3
@@ -8,32 +8,32 @@ from botocore.exceptions import ClientError
 import requests
 import json
 
-#Definir data:
+#Set date:
 import time
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 import calendar
 
-#Salvar arquivos CSV:
+#Save CSV files:
 import csv
 from pathlib import Path
 import io
 
-#Carregar variáveis de ambiente:
+#Load environment variables:
 import os
 from dotenv import load_dotenv
 
-#Mesclar tabelas:
+#Merge tables:
 import pandas as pd
 
-#Pegar dados paralelamente:
+#Make async API requests:
 import aiohttp
 import asyncio
 import nest_asyncio
 
 
-#Definir função para tratar dados obtidos do HTTP Response:
+#Define function that processes data from HTTP Response:
 def dfs(dados, path_atual=None):
     '''Realiza uma busca de profundidade (DFS) e gera uma lista com caminhos para todos os nós folha de uma árvore de dados, e os valores desses nós. \n
     Parameters:
@@ -68,12 +68,12 @@ def dfs(dados, path_atual=None):
 
     return resultado
 
-#Definir função para tratar colunas que contém uma palavra específica:
+#Define function that checks if a column has a specific word:
 def contem_palavra(input_string, palavra):
     palavras = input_string.split('_')
     return palavra in palavras
 
-#Definir função para checar status de busca assíncrona:
+#Define function that checks async job status:
 async def check_async_job_status(report_run_id):
     url = f"https://graph.facebook.com/v20.0/{report_run_id}"
     params = {
@@ -96,14 +96,14 @@ async def check_async_job_status(report_run_id):
                     return False
                 await asyncio.sleep(0.1)  # Esperar 0.1 segundos para buscar novamente, evitando erro de muitos requests simultâneos na API.
 
-#Definir função para pegar resultado final da busca assíncrona:
+#Define function that gets the final result of the async search:
 async def fetch_async_job_result(report_run_id, params):
     url = f"https://graph.facebook.com/v20.0/{report_run_id}/insights"
     async with aiohttp.ClientSession() as session:
         async with session.get(url, params=params) as response:
             return await response.json()
 
-#Definir função para processar dados:
+#Define function that processes data:
 def process_data(itens_tratados):
     valores_padrao = {'str': '', 'int': '', 'float': '', 'bool': False}
     processed_data = []
@@ -129,21 +129,20 @@ def process_data(itens_tratados):
     return processed_data
     
     
-#Carregar credenciais:
+#Load credentials:
 load_dotenv()
 long_lived_user_access_token = os.getenv('long_lived_user_access_token')
 account_id = os.getenv('account_id')
 
-#Conectar Notebook ao S3 Bucket:
+#Connect to S3 Bucket:
 AWS_PROFILE_NAME = os.getenv('AWS_PROFILE_NAME')
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('MY_SECRET_ACCESS_KEY')
 BUCKET_NAME = os.getenv('BUCKET_NAME')
-print(long_lived_user_access_token)
-session = boto3.Session() #Obs: omitir profile_name= AWS_PROFILE_NAME ao passar para AWS Lambda
+session = boto3.Session() #Obs: ommit "profile_name = AWS_PROFILE_NAME" when using this code in AWS Lambda
 s3 = session.client('s3')
 
-#Definir quais colunas pegar da API:
+#Define which columns to get from the API:
 total_fields = [
     "action_values",
     "actions",
@@ -224,17 +223,16 @@ total_fields = [
     "account_id",
     "account_name",
 ]
-unique_identifiers = ['campaign_name', 'adset_name', 'ad_name', 'date_start', 'date_stop'] #lista com colunas que serão usadas para dar unicidade às linhas, como um código de transação
-#Dicionário padrão com todas as colunas possíveis que não deram erro:
+
+#Define unique identifiers that will be used together to distinguish rows in the SQL table:
+unique_identifiers = ['campaign_name', 'adset_name', 'ad_name', 'date_start', 'date_stop']
+
+#DFS-generated dictionary obtained from API request, used as standard structure for allocating upcoming data from API:
 dicionario_padrao = {'date_start': 'str', 'date_stop': 'str', 'actions_1_action_type': 'str', 'actions_1_value': 'str', 'actions_2_action_type': 'str', 'actions_2_value': 'str', 'actions_3_action_type': 'str', 'actions_3_value': 'str', 'actions_4_action_type': 'str', 'actions_4_value': 'str', 'actions_5_action_type': 'str', 'actions_5_value': 'str', 'actions_6_action_type': 'str', 'actions_6_value': 'str', 'actions_7_action_type': 'str', 'actions_7_value': 'str', 'actions_8_action_type': 'str', 'actions_8_value': 'str', 'actions_9_action_type': 'str', 'actions_9_value': 'str', 'actions_10_action_type': 'str', 'actions_10_value': 'str', 'ad_id': 'str', 'ad_name': 'str', 'adset_id': 'str', 'adset_name': 'str', 'buying_type': 'str', 'campaign_id': 'str', 'campaign_name': 'str', 'clicks': 'str', 'conversion_rate_ranking': 'str', 'cost_per_action_type_1_action_type': 'str', 'cost_per_action_type_1_value': 'str', 'cost_per_action_type_2_action_type': 'str', 'cost_per_action_type_2_value': 'str', 'cost_per_action_type_3_action_type': 'str', 'cost_per_action_type_3_value': 'str', 'cost_per_action_type_4_action_type': 'str', 'cost_per_action_type_4_value': 'str', 'cost_per_action_type_5_action_type': 'str', 'cost_per_action_type_5_value': 'str', 'cost_per_action_type_6_action_type': 'str', 'cost_per_action_type_6_value': 'str', 'cost_per_action_type_7_action_type': 'str', 'cost_per_action_type_7_value': 'str', 'cost_per_action_type_8_action_type': 'str', 'cost_per_action_type_8_value': 'str', 'cost_per_action_type_9_action_type': 'str', 'cost_per_action_type_9_value': 'str', 'cost_per_action_type_10_action_type': 'str', 'cost_per_action_type_10_value': 'str', 'cost_per_inline_link_click': 'str', 'cost_per_inline_post_engagement': 'str', 'cost_per_thruplay_1_action_type': 'str', 'cost_per_thruplay_1_value': 'str', 'cost_per_unique_action_type_1_action_type': 'str', 'cost_per_unique_action_type_1_value': 'str', 'cost_per_unique_action_type_2_action_type': 'str', 'cost_per_unique_action_type_2_value': 'str', 'cost_per_unique_action_type_3_action_type': 'str', 'cost_per_unique_action_type_3_value': 'str', 'cost_per_unique_action_type_4_action_type': 'str', 'cost_per_unique_action_type_4_value': 'str', 'cost_per_unique_action_type_5_action_type': 'str', 'cost_per_unique_action_type_5_value': 'str', 'cost_per_unique_action_type_6_action_type': 'str', 'cost_per_unique_action_type_6_value': 'str', 'cost_per_unique_click': 'str', 'cost_per_unique_inline_link_click': 'str', 'cpc': 'str', 'cpm': 'str', 'cpp': 'str', 'ctr': 'str', 'engagement_rate_ranking': 'str', 'frequency': 'str', 'full_view_impressions': 'str', 'full_view_reach': 'str', 'impressions': 'str', 'inline_link_click_ctr': 'str', 'inline_link_clicks': 'str', 'inline_post_engagement': 'str', 'objective': 'str', 'optimization_goal': 'str', 'quality_ranking': 'str', 'reach': 'str', 'social_spend': 'str', 'spend': 'str', 'video_30_sec_watched_actions_1_action_type': 'str', 'video_30_sec_watched_actions_1_value': 'str', 'video_avg_time_watched_actions_1_action_type': 'str', 'video_avg_time_watched_actions_1_value': 'str', 'video_p100_watched_actions_1_action_type': 'str', 'video_p100_watched_actions_1_value': 'str', 'video_p25_watched_actions_1_action_type': 'str', 'video_p25_watched_actions_1_value': 'str', 'video_p50_watched_actions_1_action_type': 'str', 'video_p50_watched_actions_1_value': 'str', 'video_p75_watched_actions_1_action_type': 'str', 'video_p75_watched_actions_1_value': 'str', 'video_p95_watched_actions_1_action_type': 'str', 'video_p95_watched_actions_1_value': 'str', 'video_play_actions_1_action_type': 'str', 'video_play_actions_1_value': 'str', 'video_play_curve_actions_1_action_type': 'str', 'video_play_curve_actions_1_value_1': 'int', 'video_play_curve_actions_1_value_2': 'int', 'video_play_curve_actions_1_value_3': 'int', 'video_play_curve_actions_1_value_4': 'int', 'video_play_curve_actions_1_value_5': 'int', 'video_play_curve_actions_1_value_6': 'int', 'video_play_curve_actions_1_value_7': 'int', 'video_play_curve_actions_1_value_8': 'int', 'video_play_curve_actions_1_value_9': 'int', 'video_play_curve_actions_1_value_10': 'int', 'website_ctr_1_action_type': 'str', 'website_ctr_1_value': 'str', 'account_id': 'str', 'account_name': 'str'}
-#Dicionário padrão ### omitidos, com colunas vazias extras de listas removidas: (USADA MAIS RECENTEMENTE)
-#dicionario_padrao = {'date_start': 'str', 'date_stop': 'str', 'actions_1_action_type': 'str', 'actions_1_value': 'str', 'actions_2_action_type': 'str', 'actions_2_value': 'str', 'actions_3_action_type': 'str', 'actions_3_value': 'str', 'actions_4_action_type': 'str', 'actions_4_value': 'str', 'actions_5_action_type': 'str', 'actions_5_value': 'str', 'actions_6_action_type': 'str', 'actions_6_value': 'str', 'actions_7_action_type': 'str', 'actions_7_value': 'str', 'actions_8_action_type': 'str', 'actions_8_value': 'str', 'actions_9_action_type': 'str', 'actions_9_value': 'str', 'actions_10_action_type': 'str', 'actions_10_value': 'str', 'ad_id': 'str', 'ad_name': 'str', 'adset_id': 'str', 'adset_name': 'str', 'campaign_id': 'str', 'campaign_name': 'str', 'clicks': 'str', 'cost_per_inline_link_click': 'str', 'cost_per_inline_post_engagement': 'str', 'cost_per_thruplay_1_action_type': 'str', 'cost_per_thruplay_1_value': 'str', 'cost_per_unique_action_type_1_action_type': 'str', 'cost_per_unique_action_type_1_value': 'str', 'cost_per_unique_action_type_2_action_type': 'str', 'cost_per_unique_action_type_2_value': 'str', 'cost_per_unique_action_type_3_action_type': 'str', 'cost_per_unique_action_type_3_value': 'str', 'cost_per_unique_action_type_4_action_type': 'str', 'cost_per_unique_action_type_4_value': 'str', 'cost_per_unique_action_type_5_action_type': 'str', 'cost_per_unique_action_type_5_value': 'str', 'cost_per_unique_action_type_6_action_type': 'str', 'cost_per_unique_action_type_6_value': 'str', 'cost_per_unique_action_type_7_action_type': 'str', 'cost_per_unique_action_type_7_value': 'str', 'cost_per_unique_action_type_8_action_type': 'str', 'cost_per_unique_action_type_8_value': 'str', 'cost_per_unique_action_type_9_action_type': 'str', 'cost_per_unique_action_type_9_value': 'str', 'cost_per_unique_click': 'str', 'cost_per_unique_inline_link_click': 'str', 'cpc': 'str', 'cpm': 'str', 'cpp': 'str', 'ctr': 'str', 'frequency': 'str', 'full_view_impressions': 'str', 'full_view_reach': 'str', 'impressions': 'str', 'inline_link_click_ctr': 'str', 'inline_link_clicks': 'str', 'inline_post_engagement': 'str', 'reach': 'str', 'spend': 'str', 'video_30_sec_watched_actions_1_action_type': 'str', 'video_30_sec_watched_actions_1_value': 'str', 'video_avg_time_watched_actions_1_action_type': 'str', 'video_avg_time_watched_actions_1_value': 'str', 'video_p100_watched_actions_1_action_type': 'str', 'video_p100_watched_actions_1_value': 'str', 'video_p25_watched_actions_1_action_type': 'str', 'video_p25_watched_actions_1_value': 'str', 'video_p50_watched_actions_1_action_type': 'str', 'video_p50_watched_actions_1_value': 'str', 'video_p75_watched_actions_1_action_type': 'str', 'video_p75_watched_actions_1_value': 'str', 'video_p95_watched_actions_1_action_type': 'str', 'video_p95_watched_actions_1_value': 'str', 'video_play_actions_1_action_type': 'str', 'video_play_actions_1_value': 'str', 'video_play_curve_actions_1_action_type': 'str', 'video_play_curve_actions_1_value_1': 'str', 'video_play_curve_actions_1_value_2': 'str', 'video_play_curve_actions_1_value_3': 'str', 'video_play_curve_actions_1_value_4': 'str', 'video_play_curve_actions_1_value_5': 'str', 'video_play_curve_actions_1_value_6': 'str', 'video_play_curve_actions_1_value_7': 'str', 'video_play_curve_actions_1_value_8': 'str', 'video_play_curve_actions_1_value_9': 'str', 'video_play_curve_actions_1_value_10': 'str', 'website_ctr_1_action_type': 'str', 'website_ctr_1_value': 'str', 'account_currency': 'str', 'unique_identifier': 'str'}
+#Columns with up to 10 repetitions may have more repetitions; I set a limit of up to 10 in the DFS function used for generating this
 
-#dicionário padrão com todas as colunas possíveis, que não deram erro (levantamento feito com dados de um dia) e que não estão vazias (levantamento feito com tds campanhas):
-#colunas com até 10 repetições podem ter mais outras repetições, eu pus um limite de até 10 para pegar
-#dicionario_padrao = {'date_start': 'str', 'date_stop': 'str', 'actions_1_action_type': 'str', 'actions_1_value': 'str', 'actions_2_action_type': 'str', 'actions_2_value': 'str', 'actions_3_action_type': 'str', 'actions_3_value': 'str', 'actions_4_action_type': 'str', 'actions_4_value': 'str', 'actions_5_action_type': 'str', 'actions_5_value': 'str', 'actions_6_action_type': 'str', 'actions_6_value': 'str', 'actions_7_action_type': 'str', 'actions_7_value': 'str', 'actions_8_action_type': 'str', 'actions_8_value': 'str', 'actions_9_action_type': 'str', 'actions_9_value': 'str', 'actions_10_action_type': 'str', 'actions_10_value': 'str', 'ad_name': 'str', 'adset_id': 'str', 'adset_name': 'str', 'campaign_id': 'str', 'campaign_name': 'str', 'clicks': 'str', 'cost_per_inline_link_click': 'str', 'cost_per_inline_post_engagement': 'str', 'cost_per_thruplay_1_action_type': 'str', 'cost_per_thruplay_1_value': 'str', 'cost_per_unique_action_type_1_action_type': 'str', 'cost_per_unique_action_type_1_value': 'str', 'cost_per_unique_action_type_2_action_type': 'str', 'cost_per_unique_action_type_2_value': 'str', 'cost_per_unique_action_type_3_action_type': 'str', 'cost_per_unique_action_type_3_value': 'str', 'cost_per_unique_action_type_4_action_type': 'str', 'cost_per_unique_action_type_4_value': 'str', 'cost_per_unique_action_type_5_action_type': 'str', 'cost_per_unique_action_type_5_value': 'str', 'cost_per_unique_action_type_6_action_type': 'str', 'cost_per_unique_action_type_6_value': 'str', 'cost_per_unique_action_type_7_action_type': 'str', 'cost_per_unique_action_type_7_value': 'str', 'cost_per_unique_action_type_8_action_type': 'str', 'cost_per_unique_action_type_8_value': 'str', 'cost_per_unique_action_type_9_action_type': 'str', 'cost_per_unique_action_type_9_value': 'str', 'cost_per_unique_click': 'str', 'cost_per_unique_inline_link_click': 'str', 'cpc': 'str', 'cpm': 'str', 'cpp': 'str', 'ctr': 'str', 'frequency': 'str', 'full_view_impressions': 'str', 'full_view_reach': 'str', 'impressions': 'str', 'inline_link_click_ctr': 'str', 'inline_link_clicks': 'str', 'inline_post_engagement': 'str', 'reach': 'str', 'spend': 'str', 'video_30_sec_watched_actions_1_action_type': 'str', 'video_30_sec_watched_actions_1_value': 'str', 'video_avg_time_watched_actions_1_action_type': 'str', 'video_avg_time_watched_actions_1_value': 'str', 'video_p100_watched_actions_1_action_type': 'str', 'video_p100_watched_actions_1_value': 'str', 'video_p25_watched_actions_1_action_type': 'str', 'video_p25_watched_actions_1_value': 'str', 'video_p50_watched_actions_1_action_type': 'str', 'video_p50_watched_actions_1_value': 'str', 'video_p75_watched_actions_1_action_type': 'str', 'video_p75_watched_actions_1_value': 'str', 'video_p95_watched_actions_1_action_type': 'str', 'video_p95_watched_actions_1_value': 'str', 'video_play_actions_1_action_type': 'str', 'video_play_actions_1_value': 'str', 'video_play_curve_actions_1_action_type': 'str', 'video_play_curve_actions_1_value_1': 'int', 'video_play_curve_actions_1_value_2': 'int', 'video_play_curve_actions_1_value_3': 'int', 'video_play_curve_actions_1_value_4': 'int', 'video_play_curve_actions_1_value_5': 'int', 'video_play_curve_actions_1_value_6': 'int', 'video_play_curve_actions_1_value_7': 'int', 'video_play_curve_actions_1_value_8': 'int', 'video_play_curve_actions_1_value_9': 'int', 'video_play_curve_actions_1_value_10': 'int', 'website_ctr_1_action_type': 'str', 'website_ctr_1_value': 'str'}
 
-#Pegar lista de campanhas:
+#Get list of campaigns:
 effective_status = ['ACTIVE', 'PAUSED', 'PENDING_REVIEW', 'DISAPPROVED', 'PREAPPROVED', 'PENDING_BILLING_INFO', 'CAMPAIGN_PAUSED', 'ARCHIVED', 'ADSET_PAUSED', 'IN_PROCESS', 'WITH_ISSUES']
 campaign_ids = []
 
