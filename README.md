@@ -228,8 +228,22 @@ At the very end of the code, commit the connection, close the cursor and close t
 	conn.close()
 	job.commit()
 
-### Files description:
+## Files description
 
-...
+### [Projects](https://github.com/joviprata/AWS-api-to-sql/tree/main/Projects)
+These projects are examples of the process described in this repository. They all contain a python code to be used in AWS Lambda that processes data from a specific API and sends them to an S3 bucket, and a glue job script that gets data from the S3 bucket, makes ETL processes and sends them to an RDS Postgres database. The following projects currently available for viewing:
+#### [Facebook Ads API to Postgres](https://github.com/joviprata/AWS-api-to-sql/tree/main/Projects/Facebook%20Ads%20API%20to%20Postgres)
+- [facebookads_s3_glue_job_script.py](https://github.com/joviprata/AWS-api-to-sql/blob/main/Projects/Facebook%20Ads%20API%20to%20Postgres/facebookads_s3_glue_job_script.py)
+- [send_facebookads_s3.py](https://github.com/joviprata/AWS-api-to-sql/blob/main/Projects/Facebook%20Ads%20API%20to%20Postgres/send_facebookads_s3.py)
+
+#### [Hotmart API to Postgres](https://github.com/joviprata/AWS-api-to-sql/tree/main/Projects/Hotmart%20API%20to%20Postgres)
+- [hotmart_s3_glue_job_script.py](https://github.com/joviprata/AWS-api-to-sql/blob/main/Projects/Hotmart%20API%20to%20Postgres/hotmart_s3_glue_job_script.py)
+- [send_hotmart_s3.py](https://github.com/joviprata/AWS-api-to-sql/blob/main/Projects/Hotmart%20API%20to%20Postgres/send_hotmart_s3.py)
+
+#### [Instagram API to Postgres](https://github.com/joviprata/AWS-api-to-sql/tree/main/Projects/Instagram%20API%20to%20Postgres)
+- [instagram_s3_glue_job_script.py](https://github.com/joviprata/AWS-api-to-sql/blob/main/Projects/Instagram%20API%20to%20Postgres/instagram_s3_glue_job_script.py)
+- [send_instagram_s3.py](https://github.com/joviprata/AWS-api-to-sql/blob/main/Projects/Instagram%20API%20to%20Postgres/send_instagram_s3.py)
+
+## Acknowledgments 
 
 This repository was possible with the help of many coders and their tutorials on YouTube, Linkedin, and Stack Overflow: [Anything2Cloud](https://youtu.be/xqxFWB5BD0o?si=FewMLDPzv-6jkfOe), [Yogesh Vats](https://www.linkedin.com/pulse/using-external-python-library-aws-glue-etl-job-postgresql-yogesh-vats/), among others.
