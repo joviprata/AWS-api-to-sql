@@ -80,7 +80,7 @@ In the trust relationships tab, edit the trust policy and paste this code:
 
 	
 ## Gathering data from API and uploading to S3 Bucket
-This process consists of writing code, testing it on an IDE like VSCode, sending that code into AWS Lambda with some minor adjustments, and automating it EventBridge.
+This process consists of writing code, testing it on an IDE like VSCode, sending that code into AWS Lambda with some minor adjustments, and automating it using EventBridge.
 I used VSCode to write my code. Basic requirements for this are:
 - Refer to your API documentation on how to fetch data. For this case, I used Hotmart's API, a sales website
   - Hotmart's API provides response.json() data in the form similar to a heterogenic Python dictionary: a dictionary with other sub-dictionaries, integers, floats or strings. I implemented a DFS (Depth-First-Search) function to reorganize this structure into a dictionary where the keys are paths to the value it receives. Example: {"dictionary_1_sub-dictionary_1": "Value 1", "dictionary_1_sub-dictionary_2": "Value 2"}
