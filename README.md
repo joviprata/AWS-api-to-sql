@@ -246,4 +246,6 @@ These projects are examples of the process described in this repository. They al
 
 ## Acknowledgments 
 
-This repository was possible with the help of many coders and their tutorials on YouTube, Linkedin, and Stack Overflow: [Anything2Cloud](https://youtu.be/xqxFWB5BD0o?si=FewMLDPzv-6jkfOe), [Yogesh Vats](https://www.linkedin.com/pulse/using-external-python-library-aws-glue-etl-job-postgresql-yogesh-vats/), among others.
+This repository was possible with the help of many coders and their tutorials on YouTube, Linkedin, and Stack Overflow:<br/>
+[Yogesh Vats](https://www.linkedin.com/pulse/using-external-python-library-aws-glue-etl-job-postgresql-yogesh-vats/), [AWS Made Easy](https://youtu.be/s9PVPijAw3I?si=rRCHXSgNEaIwhsnh), [Chris Castro](https://youtu.be/ddSoj_ihLfo?si=T-NkVI-BDBnM1iWv), [Be a Better Dev](https://youtu.be/aDqxCYRDQNI?si=3pOb5KvyDnk-cvGJ), [Cloud Quick Labs](https://youtu.be/RGSKeK9xow0?si=pCtZIFTYgPv1hDVi), [S3CloudHub](https://youtu.be/0A-5ITILrMA?si=lReLQ2OApvDS6eRH), [Database Star](https://youtu.be/XF1ZADfH0EQ?si=u0C6fo0e3KPoUYX-), [Code For All](https://youtu.be/J4vtYlemcHY?si=W_3MqljhbLayH0ny), [Shravan Kumar Gatla](https://youtu.be/LocK5NrJUF0?si=oiHJGA-_6rXi8IGu), 
+[Anything2Cloud](https://youtu.be/xqxFWB5BD0o?si=FewMLDPzv-6jkfOe), [Justin Stolpe](https://youtu.be/_L6cSmnPZY8?si=6ibmqXvgl3wVnsGW), among others.
