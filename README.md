@@ -1,4 +1,4 @@
-![API to Postgres Diagram](https://github.com/user-attachments/assets/e3afb286-a19a-4852-9f33-210784c13c91)
+![API to Postgres Diagram](https://github.com/user-attachments/assets/a818dec0-e8b9-48d3-b335-c5c72c0b07c3)
 # How to store External API Data in Postgres with AWS
 
 Data engineering step-by-step process on how to use AWS tools to get data from an API, send them to an S3 Bucket using a Lambda function, do ETL processes with a Glue Job and send to a PostgreSQL database with an Upsert approach. This repository is under development.
